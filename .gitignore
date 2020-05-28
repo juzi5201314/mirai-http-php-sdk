@@ -1,5 +1,6 @@
-./vendor
+vendor
+.idea
 
-.env
+.phpunit.result.cache
 composer.phar
 composer.lock
