@@ -20,7 +20,8 @@
     "amphp/log": "v1.1.0",
     "phpunit/phpunit": "9.1.5",
     "amphp/http-client": "4.x-dev",
-    "ext-json": "*"
+    "ext-json": "*",
+    "php": ">=7.4"
   },
   "repositories": [
     {
