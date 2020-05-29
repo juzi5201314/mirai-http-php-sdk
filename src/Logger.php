@@ -8,8 +8,7 @@ use Amp\Log\StreamHandler;
 
 trait Logger {
 
-    /** @var \Monolog\Logger */
-    private $logger;
+    private \Monolog\Logger $logger;
 
     /**
      * 不能调用abstract static function真的烦
@@ -59,11 +58,6 @@ trait Logger {
 
     public function notice(string $message) {
         $this->get_logger_or_init()->notice($message);
-    }
-
-    public function close_logger() {
-        $this->info(sprintf("Logger #%s closed.", $this->get_name()));
-        $this->get_logger_or_init()->close();
     }
 
 }
