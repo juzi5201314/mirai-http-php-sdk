@@ -2,5 +2,7 @@ vendor
 .idea
 
 .phpunit.result.cache
+tests/.env.test
+
 composer.phar
 composer.lock
