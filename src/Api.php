@@ -6,6 +6,7 @@ namespace MiraiSdk;
 use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Response;
 use Amp\Promise;
+use GuzzleHttp\Client;
 use MiraiSdk\message\Message;
 use function Amp\call;
 use function MiraiSdk\utils\map_promise;
@@ -41,6 +42,13 @@ trait Api {
         );
     }
 
+    public function fetch_message(int $count): Promise {
+        return map_promise(
+            $this->get_api(sprintf("/fetchMessage?sessionKey=%s&count=%d", $this->session, $count)),
+            fn($res) => $res['data']
+        );
+    }
+
     /**
      * 释放session，返回是否成功
      *
@@ -51,6 +59,25 @@ trait Api {
             $this->send_api('/release', ["sessionKey" => $this->session, "qq" => $this->get_qq()]),
             fn($res) => $res['code'] == 0
         );
+    }
+
+    /**
+     * 同步释放session，返回是否成功
+     * 用于在Loop关闭之后释放session
+     *
+     * @return bool
+     */
+    public function sync_release(): bool {
+        try {
+            $client = new Client();
+            $response = $client->post($this->addr . '/release', [
+                "body" => json_encode(["sessionKey" => $this->session, "qq" => $this->get_qq()])
+            ]);
+            $res = self::handle_err(json_decode($response->getBody(), true));
+            return $res['code'] == 0;
+        } catch (\Throwable $throwable) {
+            return false;
+        }
     }
 
     /**
