@@ -38,8 +38,23 @@ trait Listener {
     public function listen_once(): Promise {
         return call(function () {
             $data = yield $this->fetch_message($this->fetch_count);
-            //TODO: 解析消息
-            var_dump($data);
+            foreach ($data as $event_data) {
+                $type = $event_data['type'] ?? 'Unknown';
+
+                // message类型结尾没有Event 5个字母，手动补上
+                if (substr($type, -7) == 'Message')
+                    $type = $type . 'Event';
+
+                $class_name = 'MiraiSdk\\events\\' . $type;
+                if (class_exists($class_name)) {
+                    /** @var Event $event */
+                    $event = new $class_name;
+                    $event->decode($event_data);
+                    var_dump($event);
+                } else {
+                    throw new \Exception("未知的事件类型: " . $type);
+                }
+            }
         });
     }
 }
