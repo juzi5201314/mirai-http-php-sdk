@@ -21,6 +21,7 @@ class GroupMessageEvent extends MessageEvent {
 
     public function decode(array $data) {
         parent::decode($data);
-        $this->decode_group_message_user('sender', $data['sender']);
+        $this->decode_group_user('sender', $data['sender']);
+        $this->decode_group($data['sender']['group']);
     }
 }

@@ -12,9 +12,9 @@ class FriendMessageEvent extends MessageEvent {
 
     public function decode(array $data) {
         parent::decode($data);
-        $this->id = $data['id'];
-        $this->name = $data['nickname'];
-        $this->remark = $data['remark'];
+        $this->id = $data['sender']['id'];
+        $this->name = $data['sender']['nickname'];
+        $this->remark = $data['sender']['remark'];
     }
 
 }

@@ -45,12 +45,13 @@ trait Listener {
                 if (substr($type, -7) == 'Message')
                     $type = $type . 'Event';
 
+                //var_dump($event_data);
                 $class_name = 'MiraiSdk\\events\\' . $type;
                 if (class_exists($class_name)) {
                     /** @var Event $event */
                     $event = new $class_name;
                     $event->decode($event_data);
-                    var_dump($event);
+                    var_dump(get_class($event));
                 } else {
                     throw new \Exception("未知的事件类型: " . $type);
                 }
