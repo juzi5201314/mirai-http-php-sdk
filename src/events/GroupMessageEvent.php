@@ -24,4 +24,8 @@ class GroupMessageEvent extends MessageEvent {
         $this->decode_group_user('sender', $data['sender']);
         $this->decode_group($data['sender']['group']);
     }
+
+    public function reply(array $messages, bool $quote = true) {
+        $this->bot->send_group_message($this->group_id, $messages, $quote ? $this->get_message_id() : null);
+    }
 }

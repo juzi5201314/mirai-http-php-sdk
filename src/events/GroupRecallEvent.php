@@ -6,8 +6,6 @@ namespace MiraiSdk\events;
 
 class GroupRecallEvent extends RecallEvent {
 
-    public int $user_permission;
-
     public int $operator_id;
     public string $operator_name;
     public int $operator_permission;
@@ -21,8 +19,8 @@ class GroupRecallEvent extends RecallEvent {
 
     function decode(array $data) {
         parent::decode($data);
-        $this->user_permission = self::get_permission($data['group']['permission']);
-        $this->decode_group_user('operator', $data['operator']);
-        $this->decode_group($data['operator']['group']);
+        if (!is_null($data['operator']))
+            $this->decode_group_user('operator', $data['operator']);
+        $this->decode_group($data['group']);
     }
 }

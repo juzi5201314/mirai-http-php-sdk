@@ -12,7 +12,8 @@ class MemberCardChangeEvent extends GroupMemberInfoChangeEvent {
 
     public function decode(array $data) {
         parent::decode($data);
-        $this->decode_group_user('operator', $data['operator']);
+        if (!is_null($data['operator']))
+            $this->decode_group_user('operator', $data['operator']);
     }
 
 }

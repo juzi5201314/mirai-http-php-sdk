@@ -18,7 +18,11 @@ abstract class MuteEvent extends Event {
     public int $group_permission;
 
     function decode(array $data) {
-        $this->decode_group_user('operator', $data['operator']);
-        $this->decode_group($data['operator']['group']);
+        if (!is_null($data['operator'])) {
+            $this->decode_group_user('operator', $data['operator']);
+            $this->decode_group($data['operator']['group']);
+        } else {
+            $this->decode_group($data['group']);
+        }
     }
 }

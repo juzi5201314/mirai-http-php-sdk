@@ -23,7 +23,8 @@ abstract class GroupInfoChangeEvent extends Event {
     function decode(array $data) {
         $this->origin = $data['origin'];
         $this->current = $data['current'];
-        $this->decode_group_user('operator', $data['operator']);
-        $this->decode_group($data['operator']['group']);
+        if (!is_null($data['operator']))
+            $this->decode_group_user('operator', $data['operator']);
+        $this->decode_group($data['group']);
     }
 }
