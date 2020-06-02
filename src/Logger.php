@@ -10,20 +10,25 @@ trait Logger {
 
     private \Monolog\Logger $logger;
 
-    /**
-     * 不能调用abstract static function真的烦
-     * @return string
-     */
     public abstract function get_name(): string;
+    public abstract function get_config(): BotConfig;
 
     private function init_logger() {
-        $handler = new StreamHandler(ByteStream\getStdout());
-        $handler->setFormatter(new ConsoleFormatter("[%datetime%] %channel%.%level_name%: %message%\r\n"));
+        if ($this->get_config()->enable_logger) {
+            $handler = new StreamHandler(ByteStream\getStdout(), $_ENV['LOG_LEVEL'] ?? "debug");
+            $handler->setFormatter(new ConsoleFormatter("[%datetime%] %channel%.%level_name%: %message%\r\n"));
 
-        $logger = new \Monolog\Logger($this->get_name());
-        $logger->pushHandler($handler);
+            $logger = new \Monolog\Logger($this->get_name());
+            $logger->pushHandler($handler);
 
-        $this->logger = $logger;
+            $this->logger = $logger;
+        } else {
+            $this->logger = new class('') extends \Monolog\Logger {
+                public function addRecord(int $level, string $message, array $context = []): bool {
+                    return false;
+                }
+            };
+        }
     }
 
     private function get_logger_or_init(): \Monolog\Logger {

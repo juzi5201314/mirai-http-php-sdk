@@ -11,57 +11,60 @@ class Bot {
 
     use Logger, Api, Listener;
 
-    public int $qq;
-    private string $token;
+    public BotConfig $config;
 
     /**
      * Bot constructor.
-     * @param string $addr
-     * @param int $qq
-     * @param string $token
+     * @param BotConfig $config
      */
-    public function __construct(string $addr, int $qq, string $token) {
-        $this->addr = $addr;
-        $this->qq = $qq;
-        $this->token = $token;
+    public function __construct(BotConfig $config) {
+        $this->config = $config;
+    }
+
+    public function get_config(): BotConfig {
+        return $this->config;
+    }
+
+    public function get_bot(): Bot {
+        return $this;
     }
 
     public function activate(): Promise {
         return call(function () {
-            yield $this->auth($this->token);
+            yield $this->auth($this->config->token);
             yield $this->verify();
+            $this->info(sprintf("Bot %s activated.", $this->get_name()));
         });
     }
 
-    public function run(int $loop_interval = 200): Promise {
-        return call(function () use($loop_interval) {
+    public function run(): Promise {
+        return call(function () {
             yield $this->activate();
-            yield $this->loop_listen($loop_interval);
+            yield $this->loop_listen();
+            $this->info(sprintf("Bot %s running.", $this->get_name()));
         });
     }
 
     /**
      * 不阻塞的运行
-     *
-     * @param int $loop_interval
      */
-    public function run_no_blocking(int $loop_interval = 200) {
-        Promise\rethrow($this->run($loop_interval));
+    public function run_no_blocking() {
+        Promise\rethrow($this->run());
     }
 
     public function get_name(): string {
-        return '#'.$this->qq;
+        return '#'.$this->config->qq;
     }
 
     public function get_qq(): int {
-        return $this->qq;
+        return $this->config->qq;
     }
 
     /**
      * 对象销毁时，释放session
-     * 大部分时候，bot对象销毁时Loop已经结束，无法再使用异步release
+     * 大部分时候，bot对象销毁时Loop已经结束，无法再使用任何异步操作
      *
-     * 在程序被强行杀死的时候不会触发，所以最好使用监听信号等方法，调用Loop::stop来停止循环
+     * 在程序被强行杀死的时候不会触发，所以最好使用监听信号等方法，在程序正常退出时调用Loop::stop来停止循环
      */
     public function __destruct() {
         if (!empty($this->session) && $this->sync_release()) {

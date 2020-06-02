@@ -7,18 +7,38 @@ use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Response;
 use Amp\Promise;
 use GuzzleHttp\Client;
-use MiraiSdk\message\Message;
 use function Amp\call;
 use function MiraiSdk\utils\map_promise;
 
 trait Api {
     use HttpClient;
 
-    private string $addr;
-
     private string $session;
 
+    public abstract function get_config(): BotConfig;
     public abstract function get_qq(): int;
+
+    /**
+     * 返回message id
+     *
+     * @param int $group_id
+     * @param array $msg_chain
+     * @param int|null $quote
+     * @return Promise<int>
+     */
+    public function send_group_message(int $group_id, array $msg_chain, ?int $quote = null): Promise {
+        $body = [
+            "sessionKey" => $this->session,
+            "group" => $group_id,
+            "messageChain" => $msg_chain
+        ];
+        if (!empty($quote))
+            $body["quote"] = $quote;
+        return map_promise(
+            $this->send_api('/sendGroupMessage', $body),
+            fn($res) => $res['messageId']
+        );
+    }
 
     /**
      * 返回message id
@@ -70,7 +90,7 @@ trait Api {
     public function sync_release(): bool {
         try {
             $client = new Client();
-            $response = $client->post($this->addr . '/release', [
+            $response = $client->post($this->get_config()->addr . '/release', [
                 "body" => json_encode(["sessionKey" => $this->session, "qq" => $this->get_qq()])
             ]);
             $res = self::handle_err(json_decode($response->getBody(), true));
@@ -173,7 +193,7 @@ trait Api {
      */
     public function send_api(string $uri, array $data): Promise {
         return call(function () use ($data, $uri) {
-            return self::handle_err(yield $this->json_response_to_array($this->http_post($this->addr . $uri, json_encode($data))));
+            return self::handle_err(yield $this->json_response_to_array($this->http_post($this->get_config()->addr . $uri, json_encode($data))));
         });
     }
 
@@ -183,7 +203,7 @@ trait Api {
      */
     public function get_api(string $uri): Promise {
         return call(function () use ($uri) {
-            return self::handle_err(yield $this->json_response_to_array($this->http_get($this->addr . $uri)));
+            return self::handle_err(yield $this->json_response_to_array($this->http_get($this->get_config()->addr . $uri)));
         });
     }
 
